@@ -40,6 +40,7 @@ head(high_leverage_states)
 p <- ggplot(sat_scores, aes(x=.fitted, y=.std.resid)) + geom_point() + geom_hline(yintercept=2) + geom_hline(yintercept=-2) + xlab("Prediction") + ylab("Standard Residuals") + ggtitle("Standardized Residuals vs. Predicted Values")
 p
 
+
 out_of_bouds_std_resid <- filter(sat_scores, .std.resid < -2 | .std.resid > 2)
 head(out_of_bouds_std_resid)
 
@@ -48,3 +49,6 @@ p
 
 out_of_bounds_cooksd <- filter(sat_scores, .cooksd > 1)
 head(out_of_bounds_cooksd)
+
+model <- lm(Expend ~ Years + Public + Rank, data=sat_scores)
+summary(model)$r.squared

@@ -87,12 +87,13 @@ Model selected by AIC:
 model_select_aic <- step(full_model, direction = "backward")
 tidy(model_select_aic)
 ```
+```
 1 (Intercept) -205.      118.        -1.74 8.90e- 2
 2 Years         21.9       6.04       3.63 7.31e- 4
 3 Public        -0.664     0.450     -1.48 1.47e- 1
 4 Expend         2.24      0.678      3.31 1.87e- 3
 5 Rank          10.0       0.603     16.6  8.67e-21
-
+```
 The model selected by AIC only has five predictors, while the other models have 6. This makes sense because the BIC model favors a higher number of predictors, whether or not those predictors are actually useful in creating an accurate model. 
 
 ##Part II: Model Diagnostics
@@ -105,6 +106,7 @@ sat_scores <- augment(model_select_aic, sat_scores)
 sat_scores$obs_num <- seq.int(nrow(sat_scores))
 head(sat_scores, 5)
 ```
+```
   State        SAT Takers Income Years Public Expend  Rank obs_num .fitted .resid   .hat .sigma .cooksd
   <fct>      <int>  <int>  <int> <dbl>  <dbl>  <dbl> <dbl>   <int>   <dbl>  <dbl>  <dbl>  <dbl>   <dbl>
 1 Iowa        1088      3    326  16.8   87.8   25.6  89.7       1   1059.  28.7  0.100    25.8 0.0304 
@@ -112,6 +114,7 @@ head(sat_scores, 5)
 3 NorthDako~  1068      3    317  16.6   88.3   20.6  89.8       3   1044.  24.0  0.0894   25.9 0.0185 
 4 Kansas      1045      5    338  16.3   83.9   27.1  86.3       4   1021.  24.4  0.0585   25.9 0.0117 
 5 Nebraska    1045      5    293  17.2   83.6   21.0  88.5       5   1050.  -4.99 0.113    26.2 0.00106
+```
 
 6. Let’s examine the leverage for each observation. Based on the lecture notes, what threshold should we use to determine if observations in this dataset have high leverage? Report the value and show the quation you used to calculate it.
 
@@ -179,15 +182,60 @@ Let’s start by manually calculating VIF for the variable Expend.
 
 - Begin by fitting a model with Expend as the response variable and the other predictor variables in model_select_aic as the predictors.
 
+```
+model <- lm(Expend ~ Years + Public + Rank, data=sat_scores)
+summary(model)
+```
+```
+Output:
+Call:
+lm(formula = Expend ~ Years + Public + Rank, data = sat_scores)
+```
+
+```
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-9.0866 -3.9495 -0.1809  2.3098 25.1092 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)   
+(Intercept) -10.23862   25.54114  -0.401  0.69037   
+Years         2.19154    1.27212   1.723  0.09165 . 
+Public        0.25256    0.09047   2.792  0.00761 **
+Rank         -0.28539    0.12423  -2.297  0.02620 * 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 5.636 on 46 degrees of freedom
+Multiple R-squared:  0.2102,	Adjusted R-squared:  0.1587 
+F-statistic: 4.081 on 3 and 46 DF,  p-value: 0.01189
+```
 - Calculate R2 for this model.
+
+```
+summary(model)$r.squared
+```
+Output: 0.2102009
 
 - Use this R2 to calculate VIF for Expend.
 
+VIF = 1 / (1 - R^2) = 1 / (1 - (0.2102009)^2) = 1.04622
+
 - Does Expend appear to be highly correlated with any other predictor variables? Briefly explain.
 
+Expend does not appear to be highly correlated with any other predictor variables because the VIF value is very close to 1. 
 
 13. Now, let’s use the vif function in the rms package to calculate VIF for all of the variables in the model. You can use the tidy function to output the results neatly in a data frame. Are there any obvious concerns with multicollinearity in this model? Briefly explain.
 
 ```
 vif(model_select_aic)
 ```
+
+Using the vif function, I got these results for the VIF of each variable:
+
+```
+   Years   Public   Expend     Rank 
+1.301929 1.426831 1.266145 1.129034 
+```
+
+There are no obvious concerns with multicollinearity, since all of the variables have a VIF relatively close to 1 (all are less than 1.5). However, the variable with the highest VIF is Public.
